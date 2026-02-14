@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Vendor Reconciliation - FinAgent{% endblock %}
+
+{% block header_meta %}{{ vendor }} | {{ period }}{% endblock %}
+
+{% block report_title %}Vendor Payment Reconciliation{% endblock %}
+{% block report_subtitle %}Vendor: {{ vendor }} | Period: {{ period }}{% endblock %}
+
+{% block content %}
+<div class="summary-box">
+    <h3>Reconciliation Summary</h3>
+    <div class="summary-grid">
+        <div class="summary-item">
+            <div class="label">Total Invoice Amount</div>
+            <div class="value">INR {{ "%.2f"|format(total_invoice_amount) }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">Total Bank Debits</div>
+            <div class="value">INR {{ "%.2f"|format(total_bank_debit) }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">Total Variance</div>
+            <div class="value {% if total_variance != 0 %}negative{% else %}positive{% endif %}">
+                INR {{ "%.2f"|format(total_variance) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="summary-box">
+    <h3>Match Status</h3>
+    <div class="summary-grid">
+        <div class="summary-item">
+            <div class="label">Matched Entries</div>
+            <div class="value positive">{{ matched_count }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">Unmatched Entries</div>
+            <div class="value {% if unmatched_count > 0 %}negative{% endif %}">{{ unmatched_count }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">Total Entries</div>
+            <div class="value">{{ matched_count + unmatched_count }}</div>
+        </div>
+    </div>
+</div>
+
+{% if items %}
+<div class="section">
+    <h2>Line-by-Line Reconciliation</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Invoice #</th>
+                <th>Date</th>
+                <th class="text-right">Invoice Amount</th>
+                <th class="text-right">Bank Debit</th>
+                <th class="text-right">Variance</th>
+                <th class="text-center">Match Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.invoice_no }}</td>
+                <td>{{ item.date }}</td>
+                <td class="text-right">INR {{ "%.2f"|format(item.invoice_amount) }}</td>
+                <td class="text-right">INR {{ "%.2f"|format(item.bank_debit) }}</td>
+                <td class="text-right">
+                    {% set var = item.invoice_amount - item.bank_debit %}
+                    {% if var != 0 %}
+                    <span style="color: #c0392b;">INR {{ "%.2f"|format(var) }}</span>
+                    {% else %}
+                    INR 0.00
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    <span class="badge badge-{{ item.status }}">{{ item.status }}</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

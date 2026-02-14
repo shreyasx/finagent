@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}GST Summary - FinAgent{% endblock %}
+
+{% block header_meta %}Period: {{ period }}{% endblock %}
+
+{% block report_title %}GST Compliance Summary{% endblock %}
+{% block report_subtitle %}Period: {{ period }} | GSTIN: {{ gstin }}{% endblock %}
+
+{% block content %}
+<div class="summary-box">
+    <h3>Tax Summary</h3>
+    <div class="summary-grid">
+        <div class="summary-item">
+            <div class="label">Output Tax (Collected)</div>
+            <div class="value">INR {{ "%.2f"|format(output_tax) }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">Input Tax (Paid)</div>
+            <div class="value">INR {{ "%.2f"|format(input_tax) }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">Net Tax Liability</div>
+            <div class="value {% if net_liability > 0 %}negative{% else %}positive{% endif %}">
+                INR {{ "%.2f"|format(net_liability) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="summary-box">
+    <h3>Tax Component Breakdown</h3>
+    <div class="summary-grid">
+        <div class="summary-item">
+            <div class="label">Total Taxable Value</div>
+            <div class="value">INR {{ "%.2f"|format(total_taxable_value) }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">CGST</div>
+            <div class="value">INR {{ "%.2f"|format(cgst) }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">SGST</div>
+            <div class="value">INR {{ "%.2f"|format(sgst) }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">IGST</div>
+            <div class="value">INR {{ "%.2f"|format(igst) }}</div>
+        </div>
+    </div>
+</div>
+
+{% if details %}
+<div class="section">
+    <h2>Detailed Breakdown</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Invoice #</th>
+                <th>Date</th>
+                <th>Vendor / Customer</th>
+                <th class="text-right">Taxable Value</th>
+                <th class="text-right">CGST</th>
+                <th class="text-right">SGST</th>
+                <th class="text-right">IGST</th>
+                <th class="text-right">Total Tax</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in details %}
+            <tr>
+                <td>{{ item.invoice_no }}</td>
+                <td>{{ item.date }}</td>
+                <td>{{ item.party_name }}</td>
+                <td class="text-right">INR {{ "%.2f"|format(item.taxable_value) }}</td>
+                <td class="text-right">INR {{ "%.2f"|format(item.cgst) }}</td>
+                <td class="text-right">INR {{ "%.2f"|format(item.sgst) }}</td>
+                <td class="text-right">INR {{ "%.2f"|format(item.igst) }}</td>
+                <td class="text-right">INR {{ "%.2f"|format(item.total_tax) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

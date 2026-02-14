@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FinAgent Report{% endblock %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #1a1a2e;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .header {
+            background-color: #0f1b44;
+            color: #ffffff;
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header .brand {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .header .brand span {
+            color: #4ea8de;
+        }
+        .header .meta {
+            text-align: right;
+            font-size: 11px;
+            color: #c0c0d0;
+        }
+        .report-title {
+            background-color: #e8edf5;
+            padding: 16px 32px;
+            border-bottom: 2px solid #0f1b44;
+        }
+        .report-title h1 {
+            font-size: 18px;
+            color: #0f1b44;
+            font-weight: 600;
+        }
+        .report-title .subtitle {
+            font-size: 12px;
+            color: #555;
+            margin-top: 4px;
+        }
+        .content {
+            padding: 24px 32px;
+        }
+        .summary-box {
+            background-color: #f7f9fc;
+            border: 1px solid #d0d7e6;
+            border-radius: 6px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+        }
+        .summary-box h3 {
+            font-size: 13px;
+            color: #0f1b44;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #d0d7e6;
+            padding-bottom: 6px;
+        }
+        .summary-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .summary-item {
+            flex: 1;
+            min-width: 140px;
+        }
+        .summary-item .label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #777;
+            letter-spacing: 0.5px;
+        }
+        .summary-item .value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f1b44;
+        }
+        .summary-item .value.positive { color: #1b8a3e; }
+        .summary-item .value.negative { color: #c0392b; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th {
+            background-color: #0f1b44;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 10px 12px;
+            text-align: left;
+        }
+        td {
+            padding: 9px 12px;
+            border-bottom: 1px solid #e0e4eb;
+            font-size: 12px;
+        }
+        tr:nth-child(even) {
+            background-color: #f7f9fc;
+        }
+        tr:hover {
+            background-color: #eef2f9;
+        }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-low { background-color: #d4edda; color: #155724; }
+        .badge-medium { background-color: #fff3cd; color: #856404; }
+        .badge-high { background-color: #f8d7da; color: #721c24; }
+        .badge-critical { background-color: #721c24; color: #ffffff; }
+        .badge-matched { background-color: #d4edda; color: #155724; }
+        .badge-unmatched { background-color: #f8d7da; color: #721c24; }
+        .section {
+            margin-bottom: 24px;
+        }
+        .section h2 {
+            font-size: 14px;
+            color: #0f1b44;
+            margin-bottom: 10px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #d0d7e6;
+        }
+        .footer {
+            margin-top: 32px;
+            padding: 12px 32px;
+            border-top: 2px solid #0f1b44;
+            font-size: 10px;
+            color: #888;
+            display: flex;
+            justify-content: space-between;
+        }
+        @media print {
+            .footer::after {
+                content: "Page " counter(page);
+            }
+        }
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="brand">Fin<span>Agent</span></div>
+        <div class="meta">
+            Generated: {{ generated_at[:10] if generated_at else 'N/A' }}<br>
+            {% block header_meta %}{% endblock %}
+        </div>
+    </div>
+
+    <div class="report-title">
+        <h1>{% block report_title %}Financial Report{% endblock %}</h1>
+        <div class="subtitle">{% block report_subtitle %}{% endblock %}</div>
+    </div>
+
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="footer">
+        <span>FinAgent - Confidential Financial Report</span>
+        <span>{{ generated_at[:10] if generated_at else '' }}</span>
+    </div>
+</body>
+</html>

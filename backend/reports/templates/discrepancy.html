@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Discrepancy Report - FinAgent{% endblock %}
+
+{% block report_title %}Financial Discrepancy Report{% endblock %}
+{% block report_subtitle %}Total Discrepancies: {{ total_count }}{% endblock %}
+
+{% block content %}
+<div class="summary-box">
+    <h3>Summary by Severity</h3>
+    <div class="summary-grid">
+        <div class="summary-item">
+            <div class="label">Critical</div>
+            <div class="value negative">{{ by_severity.get('critical', 0) if by_severity else 0 }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">High</div>
+            <div class="value" style="color: #e67e22;">{{ by_severity.get('high', 0) if by_severity else 0 }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">Medium</div>
+            <div class="value" style="color: #f39c12;">{{ by_severity.get('medium', 0) if by_severity else 0 }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="label">Low</div>
+            <div class="value positive">{{ by_severity.get('low', 0) if by_severity else 0 }}</div>
+        </div>
+    </div>
+</div>
+
+{% if items %}
+<div class="section">
+    <h2>Discrepancy Details</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th class="text-center">Severity</th>
+                <th>Description</th>
+                <th>Affected Documents</th>
+                <th>Recommended Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.id }}</td>
+                <td class="text-center">
+                    <span class="badge badge-{{ item.severity }}">{{ item.severity }}</span>
+                </td>
+                <td>{{ item.description }}</td>
+                <td>{{ item.affected_docs }}</td>
+                <td>{{ item.recommended_action }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}
