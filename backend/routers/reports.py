@@ -5,7 +5,8 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.database import Report, get_db, async_session
+from backend.middleware.auth import get_current_user, interaction_guard, increment_interaction
+from backend.models.database import Report, User, get_db, async_session
 from backend.models.schemas import ReportRequest, ReportResponse
 from backend.reports.generator import ReportGenerator
 
@@ -54,6 +55,7 @@ async def generate_report(
     request: ReportRequest,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(interaction_guard),
 ):
     report_id = uuid.uuid4()
     report = Report(
@@ -63,7 +65,7 @@ async def generate_report(
         status="generating",
     )
     db.add(report)
-    await db.commit()
+    await increment_interaction(current_user, db)
     await db.refresh(report)
 
     background_tasks.add_task(
@@ -74,7 +76,11 @@ async def generate_report(
 
 
 @router.get("/{report_id}", response_model=ReportResponse)
-async def get_report(report_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def get_report(
+    report_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     result = await db.execute(select(Report).where(Report.id == report_id))
     report = result.scalar_one_or_none()
     if not report:
@@ -87,6 +93,7 @@ async def export_report(
     report_id: uuid.UUID,
     format: str = "pdf",
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     result = await db.execute(select(Report).where(Report.id == report_id))
     report = result.scalar_one_or_none()

@@ -1,7 +1,35 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
+
+
+# --- Auth schemas ---
+
+
+class SignupRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class AuthResponse(BaseModel):
+    token: str
+    email: str
+
+
+class UserResponse(BaseModel):
+    id: uuid.UUID
+    email: str
+    interaction_count: int
+    max_interactions: int
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
 
 
 # --- Document extraction schemas ---

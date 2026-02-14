@@ -1,3 +1,5 @@
+import { getToken } from "./auth";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 interface UploadResponse {
@@ -11,31 +13,20 @@ interface Document {
   id: string;
   filename: string;
   file_type: string;
-  status: "processing" | "completed" | "error";
-  uploaded_at: string;
-  metadata?: Record<string, unknown>;
-}
-
-interface AnalyticsSummary {
-  total_documents: number;
-  total_invoice_amount: number;
-  discrepancies_found: number;
-  reports_generated: number;
-  monthly_expenses: { month: string; amount: number }[];
-  vendor_distribution: { name: string; value: number }[];
-  recent_discrepancies: {
-    id: string;
-    description: string;
-    severity: "high" | "medium" | "low";
-    document: string;
-    date: string;
-  }[];
+  processing_status: string;
+  upload_timestamp: string;
+  extracted_data?: Record<string, unknown>;
 }
 
 interface ReportResponse {
   report_id: string;
   format: string;
   download_url: string;
+}
+
+function authHeaders(): Record<string, string> {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 async function request<T>(
@@ -45,6 +36,7 @@ async function request<T>(
   const res = await fetch(`${API_BASE}${endpoint}`, {
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders(),
       ...options?.headers,
     },
     ...options,
@@ -69,6 +61,11 @@ export async function uploadDocument(
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${API_BASE}/api/documents/upload`);
 
+    const token = getToken();
+    if (token) {
+      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    }
+
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable && onProgress) {
         onProgress(Math.round((e.loaded / e.total) * 100));
@@ -92,10 +89,6 @@ export async function getDocuments(): Promise<Document[]> {
   return request<Document[]>("/api/documents");
 }
 
-export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
-  return request<AnalyticsSummary>("/api/analytics/summary");
-}
-
 export async function generateReport(params: {
   document_ids?: string[];
   report_type: string;
@@ -112,10 +105,11 @@ export async function exportReport(
   format: string
 ): Promise<Blob> {
   const res = await fetch(
-    `${API_BASE}/api/reports/${reportId}/export?format=${format}`
+    `${API_BASE}/api/reports/${reportId}/export?format=${format}`,
+    { headers: authHeaders() }
   );
   if (!res.ok) throw new Error("Export failed");
   return res.blob();
 }
 
-export type { UploadResponse, Document, AnalyticsSummary, ReportResponse };
+export type { UploadResponse, Document, ReportResponse };

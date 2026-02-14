@@ -26,6 +26,13 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     default_llm: str = "claude-sonnet-4-5-20250929"
 
+    # Auth
+    jwt_secret: str = "change-me-in-production"
+    jwt_expiry_hours: int = 24
+    resend_api_key: str = ""
+    verification_url_base: str = "http://localhost:3000/verify"
+    max_interactions: int = 50
+
     # File Upload
     max_file_size_mb: int = 50
     allowed_extensions: list[str] = ["pdf", "csv", "xlsx"]

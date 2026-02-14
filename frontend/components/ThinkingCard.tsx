@@ -26,13 +26,13 @@ export default function ThinkingCard({ steps, isActive = false }: ThinkingCardPr
     <div className="my-2 max-w-[75%] animate-fade-in-up">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex w-full items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-left text-sm text-gray-600 shadow-sm hover:bg-gray-50 transition-colors"
+        className="flex w-full items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm text-neutral-600 hover:bg-neutral-50 transition-colors"
       >
         {isActive ? (
-          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          <Loader2 className="h-4 w-4 animate-spin text-neutral-900" />
         ) : (
-          <div className="h-4 w-4 rounded-full bg-green-100 flex items-center justify-center">
-            <div className="h-2 w-2 rounded-full bg-green-500" />
+          <div className="h-4 w-4 rounded-full bg-neutral-100 flex items-center justify-center">
+            <div className="h-2 w-2 rounded-full bg-neutral-900" />
           </div>
         )}
         <span className="flex-1 font-medium">{headerText}</span>
@@ -44,20 +44,20 @@ export default function ThinkingCard({ steps, isActive = false }: ThinkingCardPr
       </button>
 
       {isExpanded && (
-        <div className="mt-1 rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
+        <div className="mt-1 rounded-lg border border-neutral-200 bg-neutral-50 p-3 space-y-2">
           {steps.map((step, index) => (
             <div
               key={index}
-              className="rounded-md bg-white p-2 border border-gray-100"
+              className="rounded-md bg-white p-2 border border-neutral-100"
             >
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-semibold text-primary bg-blue-50 px-1.5 py-0.5 rounded">
+                <span className="text-xs font-mono font-semibold text-neutral-900 bg-neutral-100 px-1.5 py-0.5 rounded">
                   {step.tool}
                 </span>
-                <span className="text-xs text-gray-500">{step.status}</span>
+                <span className="text-xs text-neutral-500">{step.status}</span>
               </div>
               {step.result_summary && (
-                <p className="mt-1 text-xs text-gray-600 leading-relaxed">
+                <p className="mt-1 text-xs text-neutral-600 leading-relaxed">
                   {step.result_summary}
                 </p>
               )}

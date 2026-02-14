@@ -4,22 +4,21 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-  --sidebar-bg: #0f172a;
-  --sidebar-text: #e2e8f0;
-  --primary: #2563eb;
-  --primary-light: #3b82f6;
+  --foreground: #0a0a0a;
+  --muted: #737373;
+  --border: #e5e5e5;
+  --surface: #fafafa;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "GeistVF", system-ui, -apple-system, sans-serif;
 }
 
-/* Custom scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -27,19 +26,19 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d4d4d4;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #a3a3a3;
 }
 
 /* Chat message animations */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -48,7 +47,7 @@ body {
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.3s ease-out forwards;
+  animation: fadeInUp 0.25s ease-out forwards;
 }
 
 /* Streaming text cursor */
@@ -59,7 +58,13 @@ body {
 
 .streaming-cursor::after {
   content: '|';
-  animation: blink 0.8s infinite;
-  color: #2563eb;
-  font-weight: bold;
+  animation: blink 0.7s infinite;
+  color: #0a0a0a;
+  font-weight: 600;
+}
+
+/* Focus ring */
+*:focus-visible {
+  outline: 2px solid #0a0a0a;
+  outline-offset: 2px;
 }

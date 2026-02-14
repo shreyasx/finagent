@@ -12,7 +12,6 @@ interface UploadingFile {
 
 interface FileUploaderProps {
   onUpload: (file: File, onProgress: (progress: number) => void) => Promise<void>;
-  accept?: string;
 }
 
 const ALLOWED_TYPES = [
@@ -25,8 +24,8 @@ const ALLOWED_TYPES = [
 const ALLOWED_EXTENSIONS = [".pdf", ".csv", ".xlsx", ".xls"];
 
 function getFileIcon(name: string) {
-  if (name.endsWith(".pdf")) return <FileText className="h-5 w-5 text-red-500" />;
-  return <FileSpreadsheet className="h-5 w-5 text-green-500" />;
+  if (name.endsWith(".pdf")) return <FileText className="h-5 w-5 text-neutral-700" />;
+  return <FileSpreadsheet className="h-5 w-5 text-neutral-500" />;
 }
 
 export default function FileUploader({ onUpload }: FileUploaderProps) {
@@ -124,7 +123,6 @@ export default function FileUploader({ onUpload }: FileUploaderProps) {
 
   return (
     <div className="space-y-4">
-      {/* Drop zone */}
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -132,8 +130,8 @@ export default function FileUploader({ onUpload }: FileUploaderProps) {
         onClick={() => inputRef.current?.click()}
         className={`relative cursor-pointer rounded-xl border-2 border-dashed p-10 text-center transition-all ${
           isDragging
-            ? "border-primary bg-blue-50 scale-[1.01]"
-            : "border-gray-300 hover:border-primary hover:bg-gray-50"
+            ? "border-neutral-900 bg-neutral-50 scale-[1.01]"
+            : "border-neutral-300 hover:border-neutral-900 hover:bg-neutral-50"
         }`}
       >
         <input
@@ -146,63 +144,61 @@ export default function FileUploader({ onUpload }: FileUploaderProps) {
         />
         <Upload
           className={`mx-auto h-10 w-10 ${
-            isDragging ? "text-primary" : "text-gray-400"
+            isDragging ? "text-neutral-900" : "text-neutral-400"
           }`}
         />
-        <p className="mt-3 text-sm font-medium text-gray-700">
+        <p className="mt-3 text-sm font-medium text-neutral-700">
           Drag and drop files here, or{" "}
-          <span className="text-primary">browse</span>
+          <span className="text-neutral-900 underline">browse</span>
         </p>
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-neutral-400">
           Supports PDF, CSV, XLSX -- Max 50 MB
         </p>
       </div>
 
-      {/* File list */}
       {files.length > 0 && (
         <div className="space-y-2">
           {files.map((item, index) => (
             <div
               key={index}
-              className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3"
+              className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-white p-3"
             >
               {getFileIcon(item.file.name)}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-700 truncate">
+                <p className="text-sm font-medium text-neutral-700 truncate">
                   {item.file.name}
                 </p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-neutral-400">
                   {(item.file.size / 1024).toFixed(1)} KB
                 </p>
-                {/* Progress bar */}
                 {item.status === "uploading" && (
-                  <div className="mt-1.5 h-1.5 w-full rounded-full bg-gray-100">
+                  <div className="mt-1.5 h-1.5 w-full rounded-full bg-neutral-100">
                     <div
-                      className="h-1.5 rounded-full bg-primary transition-all duration-300"
+                      className="h-1.5 rounded-full bg-neutral-900 transition-all duration-300"
                       style={{ width: `${item.progress}%` }}
                     />
                   </div>
                 )}
                 {item.status === "error" && (
-                  <p className="mt-0.5 text-xs text-red-500">{item.error}</p>
+                  <p className="mt-0.5 text-xs text-neutral-500">{item.error}</p>
                 )}
               </div>
               <div className="flex items-center gap-2">
                 {item.status === "completed" && (
-                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  <CheckCircle className="h-5 w-5 text-neutral-900" />
                 )}
                 {item.status === "error" && (
-                  <AlertCircle className="h-5 w-5 text-red-500" />
+                  <AlertCircle className="h-5 w-5 text-neutral-400" />
                 )}
                 {item.status === "uploading" && (
-                  <span className="text-xs text-gray-400">{item.progress}%</span>
+                  <span className="text-xs text-neutral-400">{item.progress}%</span>
                 )}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     removeFile(index);
                   }}
-                  className="rounded p-1 hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                  className="rounded p-1 hover:bg-neutral-100 text-neutral-400 hover:text-neutral-600"
                 >
                   <X className="h-4 w-4" />
                 </button>

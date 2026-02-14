@@ -11,7 +11,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.config import get_settings
-from backend.models.database import Document, get_db, async_session
+from backend.middleware.auth import get_current_user, interaction_guard, increment_interaction
+from backend.models.database import Document, User, get_db, async_session
 from backend.models.schemas import DocumentResponse
 from backend.pipeline.extractor import DocumentExtractor
 from backend.pipeline.structured import StructuredExtractor
@@ -96,6 +97,7 @@ async def upload_document(
     file: UploadFile,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(interaction_guard),
 ):
     # Validate extension
     ext = file.filename.rsplit(".", 1)[-1].lower() if file.filename and "." in file.filename else ""
@@ -141,9 +143,10 @@ async def upload_document(
         s3_key=s3_key,
         upload_timestamp=datetime.utcnow(),
         processing_status="pending",
+        user_id=str(current_user.id),
     )
     db.add(document)
-    await db.commit()
+    await increment_interaction(current_user, db)
     await db.refresh(document)
 
     # Kick off background processing
@@ -153,14 +156,25 @@ async def upload_document(
 
 
 @router.get("/", response_model=list[DocumentResponse])
-async def list_documents(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Document).order_by(Document.upload_timestamp.desc()))
+async def list_documents(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(
+        select(Document)
+        .where(Document.user_id == str(current_user.id))
+        .order_by(Document.upload_timestamp.desc())
+    )
     documents = result.scalars().all()
     return [DocumentResponse.model_validate(doc) for doc in documents]
 
 
 @router.get("/{document_id}", response_model=DocumentResponse)
-async def get_document(document_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def get_document(
+    document_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     result = await db.execute(select(Document).where(Document.id == document_id))
     document = result.scalar_one_or_none()
     if not document:

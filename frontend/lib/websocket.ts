@@ -1,3 +1,5 @@
+import { getToken } from "./auth";
+
 export interface ChatMessage {
   id: string;
   role: "user" | "agent";
@@ -19,7 +21,7 @@ type StatusHandler = (status: "connected" | "disconnected" | "reconnecting") => 
 
 export class WebSocketClient {
   private ws: WebSocket | null = null;
-  private url: string;
+  private baseUrl: string;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
@@ -28,13 +30,21 @@ export class WebSocketClient {
   private thinkingHandlers: ThinkingHandler[] = [];
   private statusHandlers: StatusHandler[] = [];
 
-  constructor(url?: string) {
-    this.url = url || "ws://localhost:8000/api/chat/ws";
+  constructor(baseUrl?: string) {
+    this.baseUrl = baseUrl || "ws://localhost:8000/api/chat/ws";
   }
 
   connect(): void {
+    const token = getToken();
+    if (!token) {
+      this.notifyStatus("disconnected");
+      return;
+    }
+
+    const url = `${this.baseUrl}?token=${encodeURIComponent(token)}`;
+
     try {
-      this.ws = new WebSocket(this.url);
+      this.ws = new WebSocket(url);
 
       this.ws.onopen = () => {
         this.reconnectAttempts = 0;

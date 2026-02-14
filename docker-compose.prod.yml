@@ -12,6 +12,10 @@ services:
       - CHROMA_HOST=chromadb
       - CHROMA_PORT=8000
       - S3_ENDPOINT=http://minio:9000
+      - JWT_SECRET=${JWT_SECRET}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - VERIFICATION_URL_BASE=${VERIFICATION_URL_BASE}
+      - MAX_INTERACTIONS=${MAX_INTERACTIONS:-50}
     depends_on:
       postgres:
         condition: service_healthy

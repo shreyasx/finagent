@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import get_settings
 from backend.models.database import init_db
-from backend.routers import analytics, chat, documents, reports
+from backend.routers import analytics, auth, chat, documents, reports
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -36,6 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router, prefix=settings.api_prefix)
 app.include_router(documents.router, prefix=settings.api_prefix)
 app.include_router(chat.router, prefix=settings.api_prefix)
 app.include_router(reports.router, prefix=settings.api_prefix)

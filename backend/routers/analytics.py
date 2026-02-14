@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models.database import Document, DiscrepancyRecord, Report, get_db
+from backend.middleware.auth import get_current_user
+from backend.models.database import Document, DiscrepancyRecord, Report, User, get_db
 from backend.models.schemas import AnalyticsSummary
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
@@ -12,7 +13,10 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/summary", response_model=AnalyticsSummary)
-async def get_analytics_summary(db: AsyncSession = Depends(get_db)):
+async def get_analytics_summary(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     # Count documents
     doc_count = (await db.execute(select(func.count(Document.id)))).scalar() or 0
 
