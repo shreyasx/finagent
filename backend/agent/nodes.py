@@ -22,6 +22,8 @@ def _get_llm():
         model=settings.default_llm,
         api_key=settings.anthropic_api_key,
         temperature=0,
+        timeout=120,
+        max_retries=2,
     )
 
 

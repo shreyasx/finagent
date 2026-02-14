@@ -12,12 +12,30 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.agent.graph import create_agent_graph
 from backend.config import get_settings
 from backend.middleware.auth import get_current_user, interaction_guard, increment_interaction
-from backend.models.database import User, get_db, async_session
+from backend.models.database import Document, User, get_db, async_session
 from backend.models.schemas import ChatMessage, ChatRequest, ChatResponse
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
+NO_DOCUMENTS_MESSAGE = (
+    "It looks like you haven't uploaded any documents yet. "
+    "I need financial documents (invoices, bank statements, or GST returns) "
+    "to analyse before I can answer questions.\n\n"
+    "Head over to the **Upload** section to add your first document, "
+    "and then come back here to ask me anything about it!"
+)
+
+
+async def _user_has_documents(user_id: str, db: AsyncSession) -> bool:
+    """Check whether the user has at least one successfully processed document."""
+    result = await db.execute(
+        select(Document)
+        .where(Document.user_id == user_id, Document.processing_status == "completed")
+        .limit(1)
+    )
+    return result.scalar_one_or_none() is not None
 
 
 @router.post("/", response_model=ChatResponse)
@@ -28,6 +46,12 @@ async def chat(
 ):
     await increment_interaction(current_user, db)
     conversation_id = request.conversation_id or str(uuid.uuid4())
+
+    if not await _user_has_documents(str(current_user.id), db):
+        return ChatResponse(
+            message=ChatMessage(role="assistant", content=NO_DOCUMENTS_MESSAGE),
+            conversation_id=conversation_id,
+        )
 
     try:
         graph = create_agent_graph()
@@ -108,6 +132,24 @@ async def chat_websocket(websocket: WebSocket, token: str = Query(default="")):
                     continue
                 user.interaction_count += 1
                 await db.commit()
+
+            # Check if user has any processed documents
+            has_docs = False
+            async with async_session() as check_db:
+                has_docs = await _user_has_documents(str(user_id), check_db)
+
+            if not has_docs:
+                await websocket.send_json({
+                    "type": "message",
+                    "message": {
+                        "id": str(uuid.uuid4()),
+                        "role": "agent",
+                        "content": NO_DOCUMENTS_MESSAGE,
+                        "citations": [],
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                    },
+                })
+                continue
 
             try:
                 graph = create_agent_graph()

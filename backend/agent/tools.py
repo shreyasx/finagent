@@ -46,7 +46,7 @@ def sql_query(question: str) -> str:
     """Query the financial metadata database using natural language. Converts question to SQL and executes."""
     from langchain_anthropic import ChatAnthropic
     settings = get_settings()
-    llm = ChatAnthropic(model=settings.default_llm, api_key=settings.anthropic_api_key, temperature=0)
+    llm = ChatAnthropic(model=settings.default_llm, api_key=settings.anthropic_api_key, temperature=0, timeout=120, max_retries=2)
 
     sql_prompt = (
         "Convert this question to a PostgreSQL SELECT query. "
