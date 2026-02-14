@@ -23,6 +23,20 @@ router = APIRouter(prefix="/documents", tags=["documents"])
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
+SAMPLE_FILENAMES = [
+    "acme_corp_invoice_Q4_001.csv",
+    "acme_corp_invoice_Q4_002.csv",
+    "bank_statement_Q4_2024.csv",
+    "globaltech_invoice_Q4_001.csv",
+    "gst_return_Q4_2024.csv",
+]
+
+# Resolve sample data directory (works both locally and in Docker)
+_SAMPLE_DATA_DIR = Path(__file__).resolve().parent.parent / "sample_data"
+if not _SAMPLE_DATA_DIR.exists():
+    # Fallback: repo-root sample-documents/ for local development
+    _SAMPLE_DATA_DIR = Path(__file__).resolve().parent.parent.parent / "sample-documents"
+
 
 def get_s3_client():
     return boto3.client(
@@ -153,6 +167,90 @@ async def upload_document(
     background_tasks.add_task(process_document, str(doc_id), s3_key, file.filename, ext)
 
     return DocumentResponse.model_validate(document)
+
+
+@router.post("/load-samples", response_model=list[DocumentResponse], status_code=status.HTTP_201_CREATED)
+async def load_sample_documents(
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Load 5 pre-built sample financial documents for the current user."""
+    # Check if user already loaded samples
+    result = await db.execute(
+        select(Document).where(
+            Document.user_id == str(current_user.id),
+            Document.filename.in_(SAMPLE_FILENAMES),
+        )
+    )
+    existing = result.scalars().all()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Sample documents have already been loaded.",
+        )
+
+    # Check interaction budget
+    remaining = current_user.max_interactions - current_user.interaction_count
+    if remaining < len(SAMPLE_FILENAMES):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Not enough interactions remaining ({remaining}) to load {len(SAMPLE_FILENAMES)} sample documents.",
+        )
+
+    s3 = get_s3_client()
+
+    # Ensure bucket exists
+    try:
+        s3.head_bucket(Bucket=settings.s3_bucket)
+    except Exception:
+        s3.create_bucket(Bucket=settings.s3_bucket)
+
+    # Upload samples to S3 under samples/ prefix if not already present
+    for fname in SAMPLE_FILENAMES:
+        s3_key = f"samples/{fname}"
+        try:
+            s3.head_object(Bucket=settings.s3_bucket, Key=s3_key)
+        except Exception:
+            local_path = _SAMPLE_DATA_DIR / fname
+            if not local_path.exists():
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Sample file {fname} not found on server.",
+                )
+            s3.upload_file(str(local_path), settings.s3_bucket, s3_key)
+
+    # Create Document records and kick off processing
+    created_docs = []
+    for fname in SAMPLE_FILENAMES:
+        doc_id = uuid.uuid4()
+        s3_key = f"samples/{fname}"
+        ext = fname.rsplit(".", 1)[-1].lower()
+
+        document = Document(
+            id=doc_id,
+            filename=fname,
+            file_type=ext,
+            s3_key=s3_key,
+            upload_timestamp=datetime.utcnow(),
+            processing_status="pending",
+            user_id=str(current_user.id),
+        )
+        db.add(document)
+        created_docs.append((document, str(doc_id), s3_key, fname, ext))
+
+    # Increment interaction count by number of sample docs
+    current_user.interaction_count += len(SAMPLE_FILENAMES)
+    await db.commit()
+
+    # Refresh and schedule background processing
+    responses = []
+    for document, doc_id, s3_key, fname, ext in created_docs:
+        await db.refresh(document)
+        background_tasks.add_task(process_document, doc_id, s3_key, fname, ext)
+        responses.append(DocumentResponse.model_validate(document))
+
+    return responses
 
 
 @router.get("/", response_model=list[DocumentResponse])

@@ -1,0 +1,16 @@
+Invoice Number,INV-GT-2024-001
+Invoice Date,2024-12-05
+Due Date,2025-01-05
+Vendor,GlobalTech Solutions
+Vendor GSTIN,29AABCG5678D1ZP
+Currency,INR
+
+Item,Description,HSN Code,Quantity,Unit Price,Amount
+1,API Integration Development,998314,1,7500.00,7500.00
+2,Load Testing Services,998311,1,3200.00,3200.00
+3,Documentation & Handover,998312,1,2250.00,2250.00
+
+Subtotal,,,,,12950.00
+CGST @ 9%,,,,,1165.50
+SGST @ 9%,,,,,1165.50
+Total,,,,,15281.00

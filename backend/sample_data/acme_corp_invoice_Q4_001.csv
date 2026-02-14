@@ -1,0 +1,18 @@
+Invoice Number,INV-2024-001
+Invoice Date,2024-10-15
+Due Date,2024-11-15
+Vendor,Acme Corp
+Vendor GSTIN,27AABCA1234C1ZV
+Currency,INR
+
+Item,Description,HSN Code,Quantity,Unit Price,Amount
+1,Annual Software License - Enterprise Suite,997331,1,18000.00,18000.00
+2,Technical Consulting (hours),998311,12,1500.00,18000.00
+3,Cloud Hosting - Monthly,998315,3,2000.00,6000.00
+4,Office Supplies - Printer Cartridges,84439959,5,300.00,1500.00
+5,Network Cable Installation,998316,1,1500.00,1500.00
+
+Subtotal,,,,,45000.00
+CGST @ 9%,,,,,4050.00
+SGST @ 9%,,,,,4050.00
+Total,,,,,53100.00

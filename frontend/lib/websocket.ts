@@ -31,7 +31,15 @@ export class WebSocketClient {
   private statusHandlers: StatusHandler[] = [];
 
   constructor(baseUrl?: string) {
-    this.baseUrl = baseUrl || "ws://localhost:8000/api/chat/ws";
+    if (baseUrl) {
+      this.baseUrl = baseUrl;
+    } else if (window.location.protocol === "https:") {
+      // Production: nginx proxies WebSocket to backend
+      this.baseUrl = `wss://${window.location.host}/api/chat/ws`;
+    } else {
+      // Dev: connect to backend directly (Next.js rewrites don't support WebSocket)
+      this.baseUrl = `ws://${window.location.hostname}:8000/api/chat/ws`;
+    }
   }
 
   connect(): void {
@@ -103,12 +111,13 @@ export class WebSocketClient {
     this.statusHandlers.forEach((handler) => handler(status));
   }
 
-  send(message: string, documentIds?: string[]): void {
+  send(message: string, documentIds?: string[], retry?: boolean): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(
         JSON.stringify({
           content: message,
           document_ids: documentIds || [],
+          retry: retry || false,
         })
       );
     }

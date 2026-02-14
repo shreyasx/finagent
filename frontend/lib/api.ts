@@ -1,6 +1,6 @@
 import { getToken } from "./auth";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = "";
 
 interface UploadResponse {
   document_id: string;
@@ -87,6 +87,12 @@ export async function uploadDocument(
 
 export async function getDocuments(): Promise<Document[]> {
   return request<Document[]>("/api/documents");
+}
+
+export async function loadSampleDocuments(): Promise<Document[]> {
+  return request<Document[]>("/api/documents/load-samples", {
+    method: "POST",
+  });
 }
 
 export async function generateReport(params: {

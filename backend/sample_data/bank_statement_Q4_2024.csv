@@ -1,0 +1,18 @@
+Bank Name,State Bank of India
+Account Number,XXXX XXXX 4532
+Statement Period,2024-10-01 to 2024-12-31
+
+Date,Description,Debit,Credit,Balance
+2024-10-01,Opening Balance,,,500000.00
+2024-10-05,Salary Credit - October,,185000.00,685000.00
+2024-10-18,Payment to Acme Corp - INV-2024-001,53100.00,,631900.00
+2024-10-22,Office Rent - October,35000.00,,596900.00
+2024-10-28,Electricity Bill,4200.00,,592700.00
+2024-11-05,Salary Credit - November,,185000.00,777700.00
+2024-11-15,Internet & Phone Bill,3500.00,,774200.00
+2024-11-25,Payment to Acme Corp - INV-2024-002,38350.00,,735850.00
+2024-11-28,Insurance Premium,12000.00,,723850.00
+2024-12-05,Salary Credit - December,,185000.00,908850.00
+2024-12-10,Payment to GlobalTech Solutions - INV-GT-2024-001,12450.00,,896400.00
+2024-12-15,Office Supplies - Miscellaneous,2800.00,,893600.00
+2024-12-20,Year-end Bonus to Staff,50000.00,,843600.00

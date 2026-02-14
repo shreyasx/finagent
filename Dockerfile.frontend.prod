@@ -8,11 +8,8 @@ RUN npm ci
 
 COPY frontend/ .
 
-# NEXT_PUBLIC_ vars are baked at build time — pass them as build args
-ARG NEXT_PUBLIC_API_URL
-ARG NEXT_PUBLIC_WS_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+ARG BACKEND_URL=http://backend:8000
+ENV BACKEND_URL=$BACKEND_URL
 
 RUN npm run build
 

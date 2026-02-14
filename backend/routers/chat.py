@@ -89,8 +89,9 @@ async def chat_websocket(websocket: WebSocket, token: str = Query(default="")):
             data = await websocket.receive_text()
             message = json.loads(data)
             user_msg = message.get("content", "") or message.get("message", "")
+            is_retry = message.get("retry", False)
 
-            # Check interaction limit and increment
+            # Check interaction limit and increment (skip increment on retry)
             async with async_session() as db:
                 result = await db.execute(select(User).where(User.id == user_id))
                 user = result.scalar_one_or_none()
@@ -106,8 +107,9 @@ async def chat_websocket(websocket: WebSocket, token: str = Query(default="")):
                         },
                     })
                     continue
-                user.interaction_count += 1
-                await db.commit()
+                if not is_retry:
+                    user.interaction_count += 1
+                    await db.commit()
 
             try:
                 graph = create_agent_graph()

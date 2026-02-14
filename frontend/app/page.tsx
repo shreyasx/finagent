@@ -9,6 +9,7 @@ import type { ChatMessage as ChatMessageType } from "@/lib/websocket";
 import { WebSocketClient } from "@/lib/websocket";
 
 const SESSION_KEY = "finagent_chat";
+const PENDING_KEY = "finagent_pending";
 
 const welcomeMessage: ChatMessageType = {
   id: "welcome",
@@ -24,7 +25,10 @@ function loadMessages(): ChatMessageType[] {
     const stored = sessionStorage.getItem(SESSION_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Remove incomplete streaming messages from an interrupted session
+        return parsed.filter((m: ChatMessageType) => !m.streaming);
+      }
     }
   } catch {
     // ignore
@@ -75,7 +79,17 @@ export default function ChatPage() {
     const ws = new WebSocketClient();
     wsRef.current = ws;
 
-    ws.onStatus((status) => setWsStatus(status));
+    ws.onStatus((status) => {
+      setWsStatus(status);
+      if (status === "connected") {
+        const pending = sessionStorage.getItem(PENDING_KEY);
+        if (pending) {
+          setIsThinking(true);
+          setThinkingSteps([]);
+          ws.send(pending, undefined, true);
+        }
+      }
+    });
 
     ws.onThinking((step) => {
       setIsThinking(true);
@@ -86,6 +100,7 @@ export default function ChatPage() {
     });
 
     ws.onMessage((msg) => {
+      sessionStorage.removeItem(PENDING_KEY);
       setMessages((prev) => [...prev, msg]);
       setIsStreaming(false);
       setIsThinking(false);
@@ -95,6 +110,7 @@ export default function ChatPage() {
 
     ws.onStream((chunk) => {
       if (chunk.done) {
+        sessionStorage.removeItem(PENDING_KEY);
         setIsStreaming(false);
         setMessages((prev) =>
           prev.map((m) =>
@@ -149,6 +165,7 @@ export default function ChatPage() {
       setInput("");
 
       if (wsRef.current?.isConnected) {
+        sessionStorage.setItem(PENDING_KEY, trimmed);
         setIsThinking(true);
         wsRef.current.send(trimmed);
       }
