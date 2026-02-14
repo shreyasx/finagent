@@ -9,7 +9,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY backend/requirements.txt .
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# Install everything in one pass with CPU-only torch index taking priority.
+# This ensures sentence-transformers gets torch+cpu instead of full CUDA torch.
+RUN pip install --no-cache-dir --prefix=/install \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    torch==2.6.0+cpu \
+    -r requirements.txt
 
 # ---- Production Stage ----
 FROM python:3.12.10-slim-bookworm
@@ -31,5 +37,5 @@ COPY backend/ backend/
 
 EXPOSE 8000
 
-# No --reload, single worker to keep memory low on t3.micro
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# t3.large: 2 vCPUs — use 2 workers
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
